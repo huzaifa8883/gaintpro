@@ -74,6 +74,16 @@ def webhook():
     print(f"Webhook received: {json_str}")
     return "OK", 200  # Respond with a success message to Telegram
 
+# Root route to handle requests to "/"
+@app.route('/')
+def home():
+    return "Welcome to the bot webhook service!"
+
+# Handle favicon.ico requests
+@app.route('/favicon.ico')
+def favicon():
+    return '', 404
+
 # 🔹 Event Loop Fix for Running in Async Environments 🔹
 if __name__ == "__main__":
     import nest_asyncio
