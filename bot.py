@@ -2,9 +2,14 @@ import random
 import asyncio
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext, JobQueue
+from flask import Flask, request
 
 # Telegram bot ka token
 TOKEN = "7974068784:AAFs-RpxmHrca2OawNHucMxeGhk5jGBXR4A"
+WEBHOOK_URL = "https://gaintpro-production.up.railway.app/webhook"  # Update with your actual webhook URL
+
+# Flask app setup
+app = Flask(__name__)
 
 # Random ad type generate karne ka function
 def generate_random_ad():
@@ -56,8 +61,18 @@ async def main():
     # Add the auto generation command
     app_bot.add_handler(CommandHandler("start_auto", start_auto_generation))
 
-    # Start polling the Telegram bot (instead of using a webhook)
-    await app_bot.run_polling()
+    # Set webhook URL
+    await app_bot.bot.set_webhook(WEBHOOK_URL)
+
+    # Run the application in webhook mode
+    await app_bot.run_webhook()
+
+# Webhook route for Flask
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    json_str = request.get_data(as_text=True)
+    print(f"Webhook received: {json_str}")
+    return "OK", 200  # Respond with a success message to Telegram
 
 # 🔹 Event Loop Fix for Running in Async Environments 🔹
 if __name__ == "__main__":
@@ -68,5 +83,7 @@ if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     loop.create_task(main())
 
-    # Start the event loop
-    loop.run_forever()
+    # Start the Flask app
+    from gevent.pywsgi import WSGIServer
+    server = WSGIServer(('0.0.0.0', 5000), app)
+    server.serve_forever()
