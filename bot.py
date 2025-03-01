@@ -1,7 +1,7 @@
 import random
 import asyncio
 from telegram import Update
-from telegram.ext import Application, CommandHandler, CallbackContext, JobQueue
+from telegram.ext import Application, CommandHandler, CallbackContext
 from flask import Flask, request
 
 # Telegram bot ka token
@@ -38,6 +38,7 @@ async def auto_generate(context: CallbackContext):
         await context.bot.send_message(chat_id=chat_id, text=ad)
     except Exception as e:
         print(f"Error in auto_generate: {e}")
+        await context.bot.send_message(chat_id=context.job.chat_id, text="There was an error generating the trade signal.")
 
 # Bot start karne ka function
 async def main():
@@ -47,7 +48,7 @@ async def main():
     # Start the auto generation job for every user that starts the bot
     async def start_auto_generation(update: Update, context: CallbackContext):
         chat_id = update.message.chat_id
-        job_queue = context.application.job_queue  # Ensure job queue is initialized
+        job_queue = context.application.job_queue
 
         # Check if a job with this name already exists
         job = job_queue.get_jobs_by_name(str(chat_id))
@@ -78,11 +79,6 @@ def webhook():
 @app.route('/')
 def home():
     return "Welcome to the bot webhook service!"
-
-# Handle favicon.ico requests
-@app.route('/favicon.ico')
-def favicon():
-    return '', 404
 
 # 🔹 Event Loop Fix for Running in Async Environments 🔹
 if __name__ == "__main__":
