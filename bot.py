@@ -8,7 +8,6 @@ from telegram.ext import (
     CallbackContext,
     JobQueue
 )
-from decouple import config
 
 from threading import Thread
 
