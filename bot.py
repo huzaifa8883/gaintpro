@@ -1,6 +1,7 @@
+import asyncio
+import random
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
-import random
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 # Telegram bot ka token
@@ -49,20 +50,20 @@ async def start_auto_generation(update: Update, context: CallbackContext):
     else:
         await update.message.reply_text("Auto signal generation is already running!")
 
-# Bot setup aur start karne ka function
-def main():
+# Bot aur scheduler start karne ka function
+async def main():
     app = Application.builder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("generate", generate))
     app.add_handler(CommandHandler("start_auto", start_auto_generation))  # Start auto signals
 
-    # Scheduler start karna
+    # Scheduler ko proper async execution ke liye start karna
     scheduler.start()
 
     print("🤖 Bot is running...")
-    app.run_polling()
+    await app.run_polling()
 
-# Run the bot
+# Run the bot using asyncio
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())  # Ensures proper event loop execution
