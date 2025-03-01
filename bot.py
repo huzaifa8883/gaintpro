@@ -1,6 +1,7 @@
 import logging
 import asyncio
 import random
+import os
 from flask import Flask, request
 from threading import Thread
 from telegram import Update
@@ -10,14 +11,21 @@ import nest_asyncio  # Import nest_asyncio to fix event loop issue
 # Initialize Flask app
 app = Flask(__name__)
 
-# Telegram Bot Token (Replace with your actual bot token)
-TOKEN = "7930820356:AAFiicSUzpUx2E2_KCaUOzkbETqUI5hvm-I"
+# Telegram Bot Token from environment variable
+TOKEN = os.getenv("7930820356:AAFiicSUzpUx2E2_KCaUOzkbETqUI5hvm-I")
 
 # Store users who started the bot
 subscribed_users = set()
 
-# Set up logging
-logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
+# Set up logging with file handler for production
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
+    handlers=[
+        logging.StreamHandler(),  # Logs to stdout
+        logging.FileHandler("bot_logs.log")  # Logs to a file
+    ]
+)
 logger = logging.getLogger(__name__)
 
 # Function to send trade signals
