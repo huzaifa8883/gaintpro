@@ -4,5 +4,5 @@ nest-asyncio==1.5.6
 gevent==23.9.1
 python-dotenv==0.21.1
 werkzeug>=2.2.2,<3.0
-decouple==3.7
+decouple==0.0.7
 
