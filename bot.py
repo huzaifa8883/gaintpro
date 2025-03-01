@@ -45,8 +45,11 @@ async def generate(update: Update, context: CallbackContext):
 async def start_auto_generation(update: Update, context: CallbackContext):
     chat_id = update.message.chat_id
     job_queue = context.application.job_queue  # Ensure job queue is initialized
+
+    # Check if a job with this name already exists
     job = job_queue.get_jobs_by_name(str(chat_id))
     if not job:  # Check if the job doesn't already exist
+        # Run the repeating job every 5 minutes
         job_queue.run_repeating(auto_generate, interval=300, first=0, chat_id=chat_id, name=str(chat_id))
         await update.message.reply_text("Auto signal generation started. You will receive a signal every 5 minutes.")
     else:
@@ -60,10 +63,6 @@ async def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("generate", generate))
     app.add_handler(CommandHandler("start_auto", start_auto_generation))  # Start auto signals
-
-    # Initialize job queue and add scheduler
-    job_queue = app.job_queue
-    job_queue.start()  # Start JobQueue
 
     # Scheduler ko proper async execution ke liye start karna
     scheduler.start()
