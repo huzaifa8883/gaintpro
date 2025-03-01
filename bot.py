@@ -3,9 +3,11 @@ import random
 import nest_asyncio
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
+from telegram.ext import Dispatcher
 
 # Telegram bot ka token
 TOKEN = "7974068784:AAFs-RpxmHrca2OawNHucMxeGhk5jGBXR4A"
+WEBHOOK_URL = "https://gaintpro-production.up.railway.app/webhook"  # Update with your actual webhook URL
 
 # Random ad type generate karne ka function
 def generate_random_ad():
@@ -39,7 +41,7 @@ async def auto_generate(context: CallbackContext):
 async def main():
     app = Application.builder().token(TOKEN).build()
 
-    # Start polling the bot
+    # Start webhook for the bot
     app.add_handler(CommandHandler("start", start))
 
     # Start the auto generation job for every user that starts the bot
@@ -59,8 +61,11 @@ async def main():
     # Add the auto generation command
     app.add_handler(CommandHandler("start_auto", start_auto_generation))
 
-    # Start the job queue and start polling with allowed updates
-    await app.run_polling(allowed_updates=Update.ALL_TYPES)
+    # Set webhook URL
+    await app.bot.set_webhook(WEBHOOK_URL)
+
+    # Run the application in webhook mode
+    await app.run_webhook()
 
 # 🔹 Event Loop Fix for Running in Async Environments 🔹
 if __name__ == "__main__":
