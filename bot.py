@@ -53,6 +53,7 @@ async def main():
         # Check if a job with this name already exists
         job = job_queue.get_jobs_by_name(str(chat_id))
         if not job:  # Check if the job doesn't already exist
+            print(f"Starting auto generation for chat_id: {chat_id}")  # Debugging message
             # Run the repeating job every 5 minutes
             job_queue.run_repeating(auto_generate, interval=300, first=0, chat_id=chat_id, name=str(chat_id))
             await update.message.reply_text("Auto signal generation started. You will receive a signal every 5 minutes.")
@@ -64,6 +65,10 @@ async def main():
 
     # Set webhook URL
     await app_bot.bot.set_webhook(WEBHOOK_URL)
+
+    # Verify webhook
+    webhook_info = await app_bot.bot.get_webhook_info()
+    print(f"Webhook info: {webhook_info}")  # Debugging webhook setup
 
     # Run the application in webhook mode
     await app_bot.run_webhook()
