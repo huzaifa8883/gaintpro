@@ -32,27 +32,29 @@ async def auto_generate(context: CallbackContext):
     ad = generate_random_ad()
     await context.bot.send_message(chat_id=chat_id, text=ad)
 
-# Auto signal generation start karne ka function
-async def start_auto_generation(update: Update, context: CallbackContext):
-    chat_id = update.message.chat_id
-    job_queue = context.application.job_queue  # Ensure job queue is initialized
-
-    # Check if a job with this name already exists
-    job = job_queue.get_jobs_by_name(str(chat_id))
-    if not job:  # Check if the job doesn't already exist
-        # Run the repeating job every 5 minutes
-        job_queue.run_repeating(auto_generate, interval=300, first=0, chat_id=chat_id, name=str(chat_id))
-        await update.message.reply_text("Auto signal generation started. You will receive a signal every 5 minutes.")
-    else:
-        await update.message.reply_text("Auto signal generation is already running!")
-
 # Bot start karne ka function
 async def main():
     app = Application.builder().token(TOKEN).build()
 
     # Start polling the bot
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("start_auto", start_auto_generation))  # Start auto signals immediately
+
+    # Start the auto generation job for every user that starts the bot
+    async def start_auto_generation(update: Update, context: CallbackContext):
+        chat_id = update.message.chat_id
+        job_queue = context.application.job_queue  # Ensure job queue is initialized
+
+        # Check if a job with this name already exists
+        job = job_queue.get_jobs_by_name(str(chat_id))
+        if not job:  # Check if the job doesn't already exist
+            # Run the repeating job every 5 minutes
+            job_queue.run_repeating(auto_generate, interval=300, first=0, chat_id=chat_id, name=str(chat_id))
+            await update.message.reply_text("Auto signal generation started. You will receive a signal every 5 minutes.")
+        else:
+            await update.message.reply_text("Auto signal generation is already running!")
+
+    # Add the auto generation command
+    app.add_handler(CommandHandler("start_auto", start_auto_generation))
 
     # Start the job queue and start polling
     await app.run_polling()
