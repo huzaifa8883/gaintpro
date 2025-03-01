@@ -34,7 +34,6 @@ async def auto_generate(context: CallbackContext):
         await context.bot.send_message(chat_id=chat_id, text=ad)
     except Exception as e:
         print(f"Error in auto_generate: {e}")
-        await context.bot.send_message(chat_id=context.job.chat_id, text="There was an error generating the trade signal.")
 
 async def main():
     app_bot = Application.builder().token(TOKEN).build()
@@ -64,15 +63,6 @@ def webhook():
 @app.route('/webhook', methods=['GET'])
 def webhook_get():
     return "Method Not Allowed", 405  # Respond with 405 for GET requests
-
-@app.route('/')
-def home():
-    return "Welcome to the bot webhook service!"
-
-@app.route('/favicon.ico')
-def favicon():
-    return '', 404
-
 
 @app.route('/')
 def home():
