@@ -11,7 +11,7 @@ import nest_asyncio  # Import nest_asyncio to fix event loop issue
 app = Flask(__name__)
 
 # Telegram Bot Token (Hardcoded)
-TOKEN = "7357194984:AAEl_quAN-S0RLJaEGGAESx9Ftlw23HFbzk"
+TOKEN = "7784709639:AAEiW881SxiXpFDSG3VHF5tKwuecOOKu6bg"
 
 # Store users who started the bot
 subscribed_users = set()
@@ -54,7 +54,7 @@ async def start(update: Update, context):
     chat_id = update.message.chat_id
     if chat_id not in subscribed_users:
         subscribed_users.add(chat_id)
-        await update.message.reply_text("✅ You have subscribed to trade signals. You'll receive updates every 5 minutes.")
+        await update.message.reply_text("✅ You have subscribed to trade signals. You'll receive updates every 1 minute.")
     else:
         await update.message.reply_text("🔔 You are already subscribed!")
 
@@ -65,9 +65,9 @@ async def main():
     # Add /start command handler
     application.add_handler(CommandHandler("start", start))
     
-    # Schedule job to send messages every 5 minutes
+    # Schedule job to send messages every 1 minute
     job_queue = application.job_queue
-    job_queue.run_repeating(send_signal, interval=300, first=5)
+    job_queue.run_repeating(send_signal, interval=60, first=5)  # 60 seconds = 1 minute
 
     # Start bot polling
     await application.run_polling()
