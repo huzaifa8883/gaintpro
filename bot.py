@@ -56,10 +56,23 @@ async def main():
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    print(f"Received request")  # Logs the request method
+    print(f"Received POST request")
     json_str = request.get_data(as_text=True)
     print(f"Webhook received: {json_str}")
-    return "OK", 200
+    return "OK", 200  # Respond with a success message to Telegram
+
+@app.route('/webhook', methods=['GET'])
+def webhook_get():
+    return "Method Not Allowed", 405  # Respond with 405 for GET requests
+
+@app.route('/')
+def home():
+    return "Welcome to the bot webhook service!"
+
+@app.route('/favicon.ico')
+def favicon():
+    return '', 404
+
 
 @app.route('/')
 def home():
