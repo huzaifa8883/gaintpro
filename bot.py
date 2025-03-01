@@ -6,10 +6,10 @@ from telegram.ext import (
     Application,
     CommandHandler,
     CallbackContext,
-    JobQueue
 )
 from threading import Thread
 import aiohttp  # Importing aiohttp for making HTTP requests
+import asyncio  # We will use asyncio to manage both Flask and Telegram bot
 
 # Logging setup
 logging.basicConfig(
@@ -107,18 +107,21 @@ def run_flask():
     serve(app, host="0.0.0.0", port=5000)
 
 # ✅ **Main Function to Start Flask and Telegram Bot**
-if __name__ == "__main__":
-    # Add Telegram bot handlers
-    application.add_handler(CommandHandler("start_auto", start_auto_generation))
-    application.add_handler(CommandHandler("stop_auto", stop_auto_generation))
-
-    # Run the bot and Flask app concurrently
-    from asyncio import run
-    run(set_webhook())  # Set the webhook before starting the Flask server
+async def main():
+    # Set the webhook before running the bot
+    await set_webhook()
 
     # Run Flask app in a separate thread
     flask_thread = Thread(target=run_flask)
     flask_thread.start()
 
+    # Add Telegram bot handlers
+    application.add_handler(CommandHandler("start_auto", start_auto_generation))
+    application.add_handler(CommandHandler("stop_auto", stop_auto_generation))
+
     # Run Telegram bot
-    application.run_polling()
+    await application.run_polling()
+
+# ✅ **Run the asyncio event loop to manage both Flask and the Telegram bot**
+if __name__ == "__main__":
+    asyncio.run(main())  # Ensures that everything is running inside an event loop
