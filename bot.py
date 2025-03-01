@@ -6,7 +6,7 @@ from threading import Thread
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
 
-# Flask app initialize
+# Initialize Flask app
 app = Flask(__name__)
 
 # Telegram Bot Token (Replace with your actual bot token)
@@ -27,7 +27,7 @@ async def send_signal(context: CallbackContext):
     period = str(int(asyncio.get_event_loop().time() * 1000))  # Generate period
     message = (
         f"⏰Trade Type: 5 Minute⏰\n\n"
-        f"👉Period:{period}\n"
+        f"👉Period: {period}\n"
         f"👉Buy: {buy}\n"
         f"💰Bet: 1 USDT\n\n"
         f"🔥Earn 30% interest on each bet.\n"
@@ -51,10 +51,7 @@ async def start(update: Update, context):
         await update.message.reply_text("🔔 You are already subscribed!")
 
 # Function to initialize the bot
-def run_bot():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    
+async def main():
     application = Application.builder().token(TOKEN).build()
     
     # Add /start command handler
@@ -65,7 +62,7 @@ def run_bot():
     job_queue.run_repeating(send_signal, interval=300, first=5)
 
     # Start bot polling
-    loop.run_until_complete(application.run_polling())
+    await application.run_polling()
 
 # Flask route for testing
 @app.route('/')
@@ -77,11 +74,15 @@ def home():
 def webhook():
     return "Webhook received!", 200
 
-# Start Flask and Telegram bot
-if __name__ == "__main__":
-    # Run Telegram bot in a separate thread
-    bot_thread = Thread(target=run_bot, daemon=True)
-    bot_thread.start()
-
-    # Start Flask app
+# Function to start Flask in a separate thread
+def run_flask():
     app.run(host="0.0.0.0", port=5000, debug=False)
+
+# Start Telegram bot in the main thread, Flask in a separate thread
+if __name__ == "__main__":
+    # Run Flask in a separate thread
+    flask_thread = Thread(target=run_flask, daemon=True)
+    flask_thread.start()
+
+    # Run Telegram bot in the main thread
+    asyncio.run(main())
