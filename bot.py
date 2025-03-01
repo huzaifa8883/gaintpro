@@ -32,7 +32,8 @@ async def start(update: Update, context: CallbackContext):
 
 # Har 5 minute bad auto generate hone wala function
 async def auto_generate(context: CallbackContext):
-    chat_id = context.job.chat_id  # Jis chat se /start command aayi thi
+    job = context.job
+    chat_id = job.chat_id  # Use job.chat_id
     ad = generate_random_ad()
     await context.bot.send_message(chat_id=chat_id, text=ad)
 
@@ -44,9 +45,10 @@ async def generate(update: Update, context: CallbackContext):
 # Auto signal generation start karne ka function
 async def start_auto_generation(update: Update, context: CallbackContext):
     chat_id = update.message.chat_id
-    job = context.job_queue.get_jobs_by_name(str(chat_id))
+    job_queue = context.application.job_queue  # Ensure job queue is initialized
+    job = job_queue.get_jobs_by_name(str(chat_id))
     if not job:
-        context.job_queue.run_repeating(auto_generate, interval=300, first=0, chat_id=chat_id, name=str(chat_id))
+        job_queue.run_repeating(auto_generate, interval=300, first=0, chat_id=chat_id, name=str(chat_id))
         await update.message.reply_text("Auto signal generation started. You will receive a signal every 5 minutes.")
     else:
         await update.message.reply_text("Auto signal generation is already running!")
@@ -54,6 +56,9 @@ async def start_auto_generation(update: Update, context: CallbackContext):
 # Bot aur scheduler start karne ka function
 async def main():
     app = Application.builder().token(TOKEN).build()
+
+    job_queue = app.job_queue  # Get job queue from Application
+    job_queue.start()  # Start JobQueue
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("generate", generate))
