@@ -3,13 +3,9 @@ import random
 import nest_asyncio
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 # Telegram bot ka token
 TOKEN = "7974068784:AAFs-RpxmHrca2OawNHucMxeGhk5jGBXR4A"
-
-# Scheduler initialize kar rahe hain
-scheduler = AsyncIOScheduler()
 
 # Random ad type generate karne ka function
 def generate_random_ad():
@@ -36,11 +32,6 @@ async def auto_generate(context: CallbackContext):
     ad = generate_random_ad()
     await context.bot.send_message(chat_id=chat_id, text=ad)
 
-# /generate command ka response
-async def generate(update: Update, context: CallbackContext):
-    ad = generate_random_ad()
-    await update.message.reply_text(f"Generated:\n\n{ad}")
-
 # Auto signal generation start karne ka function
 async def start_auto_generation(update: Update, context: CallbackContext):
     chat_id = update.message.chat_id
@@ -61,13 +52,9 @@ async def main():
 
     # Start polling the bot
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("generate", generate))
-    app.add_handler(CommandHandler("start_auto", start_auto_generation))  # Start auto signals
+    app.add_handler(CommandHandler("start_auto", start_auto_generation))  # Start auto signals immediately
 
-    # Scheduler ko proper async execution ke liye start karna
-    scheduler.start()
-
-    print("🤖 Bot is running...")
+    # Start the job queue and start polling
     await app.run_polling()
 
 # 🔹 Event Loop Fix for Running in Async Environments 🔹
