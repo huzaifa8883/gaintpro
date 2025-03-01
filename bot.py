@@ -2,9 +2,14 @@ import logging
 import random
 from flask import Flask, request
 from telegram import Update
-from telegram.ext import Application, CommandHandler, CallbackContext
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    CallbackContext,
+)
 from threading import Thread
 import aiohttp  # Importing aiohttp for making HTTP requests
+import asyncio  # We will use asyncio to manage both Flask and Telegram bot
 
 # Logging setup
 logging.basicConfig(
@@ -102,19 +107,26 @@ def run_flask():
     serve(app, host="0.0.0.0", port=5000)
 
 # ✅ **Main Function to Start Flask and Telegram Bot**
-if __name__ == "__main__":
-    # Add Telegram bot handlers
-    application.add_handler(CommandHandler("start_auto", start_auto_generation))
-    application.add_handler(CommandHandler("stop_auto", stop_auto_generation))
-
-    # Set webhook before starting Flask server
-    import asyncio
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(set_webhook())
+async def main():
+    # Set the webhook before running the bot
+    await set_webhook()
 
     # Run Flask app in a separate thread
     flask_thread = Thread(target=run_flask)
     flask_thread.start()
 
-    # Run Telegram bot polling
-    application.run_polling()
+    # Add Telegram bot handlers
+    application.add_handler(CommandHandler("start_auto", start_auto_generation))
+    application.add_handler(CommandHandler("stop_auto", stop_auto_generation))
+
+    # Run Telegram bot
+    await application.run_polling()
+
+# ✅ **Run the asyncio event loop to manage both Flask and the Telegram bot**
+if __name__ == "__main__":
+    try:
+        loop = asyncio.get_running_loop()  # Use get_running_loop()
+    except RuntimeError:  # If no event loop is running
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    loop.run_until_complete(main())  # Ensures that everything is running inside an event loop
