@@ -1,5 +1,6 @@
 Flask==2.2.2
-werkzeug==2.0.3  # If downgrading werkzeug
+werkzeug==2.0.3
 python-telegram-bot[webhooks]==20.1
 apscheduler==3.9.1
 nest_asyncio==1.5.4
+gevent==21.8.0

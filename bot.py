@@ -4,6 +4,10 @@ import nest_asyncio
 from flask import Flask, request
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
+from gevent import monkey
+
+# Patch standard library to make it asynchronous
+monkey.patch_all()
 
 # Telegram bot ka token
 TOKEN = "7974068784:AAFs-RpxmHrca2OawNHucMxeGhk5jGBXR4A"
@@ -78,8 +82,16 @@ def webhook():
 # 🔹 Event Loop Fix for Running in Async Environments 🔹
 if __name__ == "__main__":
     nest_asyncio.apply()  # Fix for environments like Jupyter Notebook
-    loop = asyncio.get_event_loop()
     
-    # Start your Flask server and Telegram bot
-    loop.create_task(main())  # Run the Telegram bot asynchronously
-    app.run(host="0.0.0.0", port=5000)  # Run Flask server (listen for webhook requests)
+    # Running Flask server with Gevent to handle async operations
+    from gevent.pywsgi import WSGIServer
+
+    # Start your Flask server and Telegram bot asynchronously
+    loop = asyncio.get_event_loop()
+
+    # Run Telegram bot as a background task
+    loop.create_task(main())
+
+    # Run Flask app with Gevent for async support
+    server = WSGIServer(('0.0.0.0', 5000), app)
+    server.serve_forever()
