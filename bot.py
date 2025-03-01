@@ -71,6 +71,7 @@ async def main():
 # Webhook route for Flask
 @app.route('/webhook', methods=['POST'])
 def webhook():
+    print(f"Received {request.method} request")  # Logs the request method
     json_str = request.get_data(as_text=True)
     print(f"Webhook received: {json_str}")
     return "OK", 200  # Respond with a success message to Telegram
@@ -79,6 +80,11 @@ def webhook():
 @app.route('/')
 def home():
     return "Welcome to the bot webhook service!"
+
+# Handle favicon.ico requests
+@app.route('/favicon.ico')
+def favicon():
+    return '', 404
 
 # 🔹 Event Loop Fix for Running in Async Environments 🔹
 if __name__ == "__main__":
