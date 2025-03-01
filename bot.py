@@ -1,12 +1,16 @@
-import asyncio
 import random
+import asyncio
 import nest_asyncio
+from flask import Flask, request
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
 
 # Telegram bot ka token
 TOKEN = "7974068784:AAFs-RpxmHrca2OawNHucMxeGhk5jGBXR4A"
 WEBHOOK_URL = "https://gaintpro-production.up.railway.app/webhook"  # Update with your actual webhook URL
+
+# Flask app setup
+app = Flask(__name__)
 
 # Random ad type generate karne ka function
 def generate_random_ad():
@@ -38,10 +42,8 @@ async def auto_generate(context: CallbackContext):
 
 # Bot start karne ka function
 async def main():
-    app = Application.builder().token(TOKEN).build()
-
-    # Start webhook for the bot
-    app.add_handler(CommandHandler("start", start))
+    # Create Application object
+    app_bot = Application.builder().token(TOKEN).build()
 
     # Start the auto generation job for every user that starts the bot
     async def start_auto_generation(update: Update, context: CallbackContext):
@@ -58,16 +60,26 @@ async def main():
             await update.message.reply_text("Auto signal generation is already running!")
 
     # Add the auto generation command
-    app.add_handler(CommandHandler("start_auto", start_auto_generation))
+    app_bot.add_handler(CommandHandler("start_auto", start_auto_generation))
 
     # Set webhook URL
-    await app.bot.set_webhook(WEBHOOK_URL)
+    await app_bot.bot.set_webhook(WEBHOOK_URL)
 
     # Run the application in webhook mode
-    await app.run_webhook()
+    await app_bot.run_webhook()
+
+# Webhook route for Flask
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    json_str = request.get_data(as_text=True)
+    print(f"Webhook received: {json_str}")
+    return "OK", 200  # Respond with a success message to Telegram
 
 # 🔹 Event Loop Fix for Running in Async Environments 🔹
 if __name__ == "__main__":
     nest_asyncio.apply()  # Fix for environments like Jupyter Notebook
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    
+    # Start your Flask server and Telegram bot
+    loop.create_task(main())  # Run the Telegram bot asynchronously
+    app.run(host="0.0.0.0", port=5000)  # Run Flask server (listen for webhook requests)
