@@ -11,7 +11,7 @@ import nest_asyncio  # Import nest_asyncio to fix event loop issue
 app = Flask(__name__)
 
 # Telegram Bot Token (Hardcoded)
-TOKEN = "7784709639:AAEiW881SxiXpFDSG3VHF5tKwuecOOKu6bg"
+TOKEN = "7971935665:AAHBU5pzh_VoyD7IOureH3xF4j9T-ztpsHI"
 
 # Store users who started the bot
 subscribed_users = set()
