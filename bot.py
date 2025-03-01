@@ -9,6 +9,7 @@ from telegram.ext import (
     JobQueue
 )
 from threading import Thread
+import aiohttp  # Importing aiohttp for making HTTP requests
 
 # Logging setup
 logging.basicConfig(
@@ -96,8 +97,9 @@ def webhook():
 # ✅ **Set Webhook on Startup**
 async def set_webhook():
     webhook_url = f"https://api.telegram.org/bot{TOKEN}/setWebhook?url={WEBHOOK_URL}"
-    async with application.bot.session.post(webhook_url) as response:
-        logging.info(await response.json())
+    async with aiohttp.ClientSession() as session:  # Using aiohttp for the POST request
+        async with session.post(webhook_url) as response:
+            logging.info(await response.json())
 
 # ✅ **Run Flask App**
 def run_flask():
