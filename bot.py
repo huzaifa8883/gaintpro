@@ -1,6 +1,6 @@
 import logging
-import random
 import asyncio
+import random
 from flask import Flask, request
 from threading import Thread
 from telegram import Update
@@ -42,15 +42,18 @@ async def send_signal(context: CallbackContext):
         f"🔥The higher the stage, the more profit you make."
     )
 
-    # Send message to all subscribed users
+    # Log the list of subscribed users and send the message
+    logger.info(f"Subscribed users: {subscribed_users}")
+    
     for chat_id in subscribed_users:
         try:
+            logger.info(f"Sending message to {chat_id}")
             await context.bot.send_message(chat_id=chat_id, text=message)
         except Exception as e:
             logger.error(f"Failed to send message to {chat_id}: {e}")
 
 # Handle /start command
-async def start(update: Update, context):
+async def start(update: Update, context: CallbackContext):
     chat_id = update.message.chat_id
     if chat_id not in subscribed_users:
         subscribed_users.add(chat_id)
@@ -67,6 +70,7 @@ async def main():
     
     # Schedule job to send messages every 1 minute
     job_queue = application.job_queue
+    logger.info("Job queue initialized")
     job_queue.run_repeating(send_signal, interval=60, first=5)  # 60 seconds = 1 minute
 
     # Start bot polling
@@ -85,6 +89,11 @@ def webhook():
 # Function to start Flask in a separate thread
 def run_flask():
     app.run(host="0.0.0.0", port=5000, debug=False)
+
+# Function to send a manual test message
+async def test_message(update: Update, context: CallbackContext):
+    chat_id = update.message.chat_id
+    await context.bot.send_message(chat_id=chat_id, text="Test message!")
 
 # Start Telegram bot in the main thread, Flask in a separate thread
 if __name__ == "__main__":
