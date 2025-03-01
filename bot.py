@@ -5,7 +5,7 @@ from telegram.ext import Application, CommandHandler, CallbackContext
 from flask import Flask, request
 
 # Telegram bot ka token
-TOKEN = "7974068784:AAFs-RpxmHrca2OawNHucMxeGhk5jGBXR4A"
+TOKEN = "7930820356:AAFiicSUzpUx2E2_KCaUOzkbETqUI5hvm-I"
 WEBHOOK_URL = "https://gaintpro-production.up.railway.app/webhook"  # Update with your actual webhook URL
 
 # Flask app setup
