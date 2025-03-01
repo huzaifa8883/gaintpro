@@ -34,7 +34,7 @@ async def send_signal(context: CallbackContext):
 
     period = str(int(asyncio.get_event_loop().time() * 1000))  # Generate period
     message = (
-        f"⏰Trade Type: 5 Minute⏰\n\n"
+        f"⏰Trade Type: 1 Minute⏰\n\n"
         f"👉Period: {period}\n"
         f"👉Buy: {buy}\n"
         f"💰Bet: 1 USDT\n\n"
