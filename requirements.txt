@@ -1,2 +1,3 @@
 python-telegram-bot
 apscheduler
+nest_asyncio
