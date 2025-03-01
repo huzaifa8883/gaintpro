@@ -34,7 +34,7 @@ async def send_signal(context: CallbackContext):
 
     period = str(int(asyncio.get_event_loop().time() * 1000))  # Generate period
     message = (
-        f"⏰Trade Type: 5 Minute⏰\n\n"
+        f"⏰Trade Type: 1 Minute⏰\n\n"
         f"👉Period: {period}\n"
         f"👉Buy: {buy}\n"
         f"💰Bet: 1 USDT\n\n"
@@ -65,9 +65,9 @@ async def main():
     # Add /start command handler
     application.add_handler(CommandHandler("start", start))
     
-    # Schedule job to send messages every 1 minute
+    # Schedule job to send messages every 1 minute (60 seconds)
     job_queue = application.job_queue
-    job_queue.run_repeating(send_signal, interval=60, first=5)  # 60 seconds = 1 minute
+    job_queue.run_repeating(send_signal, interval=60, first=5)  # Changed interval to 60 seconds
 
     # Start bot polling
     await application.run_polling()
