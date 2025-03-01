@@ -8,7 +8,6 @@ from telegram.ext import (
     CallbackContext,
     JobQueue
 )
-
 from threading import Thread
 
 # Logging setup
@@ -21,15 +20,14 @@ logging.basicConfig(
     ]
 )
 
-TOKEN = ("7930820356:AAFiicSUzpUx2E2_KCaUOzkbETqUI5hvm-I")
-WEBHOOK_URL = ("https://gaintpro-production.up.railway.app/webhook")
-WEBHOOK_SECRET = ("nothing")
+TOKEN = "7930820356:AAFiicSUzpUx2E2_KCaUOzkbETqUI5hvm-I"
+WEBHOOK_URL = "https://gaintpro-production.up.railway.app/webhook"
+WEBHOOK_SECRET = "nothing"
 
 app = Flask(__name__)
 
 # Initialize Telegram bot application
 application = Application.builder().token(TOKEN).build()
-
 
 # ✅ **Function to Generate Random Trade Signals**
 def generate_random_signal():
@@ -41,7 +39,6 @@ def generate_random_signal():
     ]
     return random.choice(signals)
 
-
 # ✅ **Auto Generate Trade Signals Every 5 Minutes**
 async def auto_generate(context: CallbackContext):
     try:
@@ -51,7 +48,6 @@ async def auto_generate(context: CallbackContext):
         await context.bot.send_message(chat_id=chat_id, text=signal)
     except Exception as e:
         logging.error(f"❌ Error in auto_generate: {e}")
-
 
 # ✅ **Start Auto Signal Generation**
 async def start_auto_generation(update: Update, context: CallbackContext):
@@ -66,7 +62,6 @@ async def start_auto_generation(update: Update, context: CallbackContext):
     else:
         await update.message.reply_text("⚠ Auto signal generation is already running!")
 
-
 # ✅ **Stop Auto Signal Generation**
 async def stop_auto_generation(update: Update, context: CallbackContext):
     chat_id = update.message.chat_id
@@ -80,7 +75,6 @@ async def stop_auto_generation(update: Update, context: CallbackContext):
         await update.message.reply_text("🛑 Auto signal generation stopped.")
     else:
         await update.message.reply_text("⚠ No active signal generation found.")
-
 
 # ✅ **Webhook Handler for Telegram Messages**
 @app.route("/webhook", methods=["POST"])
@@ -99,18 +93,16 @@ def webhook():
         logging.error(f"❌ Webhook Error: {e}")
         return "ERROR", 400
 
-
 # ✅ **Set Webhook on Startup**
 async def set_webhook():
     webhook_url = f"https://api.telegram.org/bot{TOKEN}/setWebhook?url={WEBHOOK_URL}"
     async with application.bot.session.post(webhook_url) as response:
         logging.info(await response.json())
 
-
 # ✅ **Run Flask App in a Separate Thread**
 def run_flask():
-    app.run(host="0.0.0.0", port=5000, debug=False)
-
+    from waitress import serve
+    serve(app, host="0.0.0.0", port=5000)
 
 # ✅ **Main Function to Start Flask and Telegram Bot**
 if __name__ == "__main__":
