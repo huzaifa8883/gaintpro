@@ -99,7 +99,7 @@ async def set_webhook():
     async with application.bot.session.post(webhook_url) as response:
         logging.info(await response.json())
 
-# ✅ **Run Flask App in a Separate Thread**
+# ✅ **Run Flask App**
 def run_flask():
     from waitress import serve
     serve(app, host="0.0.0.0", port=5000)
@@ -110,9 +110,8 @@ if __name__ == "__main__":
     application.add_handler(CommandHandler("start_auto", start_auto_generation))
     application.add_handler(CommandHandler("stop_auto", stop_auto_generation))
 
-    # Run Flask app in a separate thread
-    flask_thread = Thread(target=run_flask)
-    flask_thread.start()
+    # Set webhook on startup
+    application.run_async(set_webhook())
 
-    # Run Telegram bot
-    application.run_polling()
+    # Run Flask app
+    run_flask()
