@@ -110,8 +110,13 @@ if __name__ == "__main__":
     application.add_handler(CommandHandler("start_auto", start_auto_generation))
     application.add_handler(CommandHandler("stop_auto", stop_auto_generation))
 
-    # Set webhook on startup
-    application.run_async(set_webhook())
+    # Run the bot and Flask app concurrently
+    from asyncio import run
+    run(set_webhook())  # Set the webhook before starting the Flask server
 
-    # Run Flask app
-    run_flask()
+    # Run Flask app in a separate thread
+    flask_thread = Thread(target=run_flask)
+    flask_thread.start()
+
+    # Run Telegram bot
+    application.run_polling()
