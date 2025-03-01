@@ -5,6 +5,7 @@ from flask import Flask, request
 from threading import Thread
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
+import nest_asyncio  # Import nest_asyncio to fix event loop issue
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -80,9 +81,12 @@ def run_flask():
 
 # Start Telegram bot in the main thread, Flask in a separate thread
 if __name__ == "__main__":
+    # Apply nest_asyncio to avoid event loop conflicts
+    nest_asyncio.apply()
+    
     # Run Flask in a separate thread
     flask_thread = Thread(target=run_flask, daemon=True)
     flask_thread.start()
 
-    # Run Telegram bot in the main thread
-    asyncio.run(main())
+    # Run Telegram bot in the main thread with proper event loop handling
+    asyncio.get_event_loop().run_until_complete(main())
