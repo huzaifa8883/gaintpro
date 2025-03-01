@@ -1,20 +1,10 @@
 import random
 import asyncio
-import nest_asyncio
-from flask import Flask, request
 from telegram import Update
-from telegram.ext import Application, CommandHandler, CallbackContext
-from gevent import monkey
-
-# Patch standard library to make it asynchronous
-monkey.patch_all()
+from telegram.ext import Application, CommandHandler, CallbackContext, JobQueue
 
 # Telegram bot ka token
 TOKEN = "7974068784:AAFs-RpxmHrca2OawNHucMxeGhk5jGBXR4A"
-WEBHOOK_URL = "https://gaintpro-production.up.railway.app/webhook"  # Update with your actual webhook URL
-
-# Flask app setup
-app = Flask(__name__)
 
 # Random ad type generate karne ka function
 def generate_random_ad():
@@ -66,32 +56,17 @@ async def main():
     # Add the auto generation command
     app_bot.add_handler(CommandHandler("start_auto", start_auto_generation))
 
-    # Set webhook URL
-    await app_bot.bot.set_webhook(WEBHOOK_URL)
-
-    # Run the application in webhook mode
-    await app_bot.run_webhook()
-
-# Webhook route for Flask
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    json_str = request.get_data(as_text=True)
-    print(f"Webhook received: {json_str}")
-    return "OK", 200  # Respond with a success message to Telegram
+    # Start polling the Telegram bot (instead of using a webhook)
+    await app_bot.run_polling()
 
 # 🔹 Event Loop Fix for Running in Async Environments 🔹
 if __name__ == "__main__":
+    import nest_asyncio
     nest_asyncio.apply()  # Fix for environments like Jupyter Notebook
     
-    # Running Flask server with Gevent to handle async operations
-    from gevent.pywsgi import WSGIServer
-
-    # Start your Flask server and Telegram bot asynchronously
-    loop = asyncio.get_event_loop()
-
     # Run Telegram bot as a background task
+    loop = asyncio.get_event_loop()
     loop.create_task(main())
 
-    # Run Flask app with Gevent for async support
-    server = WSGIServer(('0.0.0.0', 5000), app)
-    server.serve_forever()
+    # Start the event loop
+    loop.run_forever()
