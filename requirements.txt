@@ -6,4 +6,5 @@ python-dotenv==0.21.1
 werkzeug>=2.2.2,<3.0
 decouple==0.0.7
 gunicorn
+waitress
 
