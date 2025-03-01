@@ -9,7 +9,7 @@ from telegram.ext import Application, CommandHandler, CallbackContext
 # Flask app initialize
 app = Flask(__name__)
 
-# Telegram Bot Token (Replace with your own)
+# Telegram Bot Token (Replace with your actual bot token)
 TOKEN = "7930820356:AAFiicSUzpUx2E2_KCaUOzkbETqUI5hvm-I"
 
 # Store users who started the bot
@@ -50,8 +50,11 @@ async def start(update: Update, context):
     else:
         await update.message.reply_text("🔔 You are already subscribed!")
 
-# Main function to set up the bot
-async def main():
+# Function to initialize the bot
+def run_bot():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    
     application = Application.builder().token(TOKEN).build()
     
     # Add /start command handler
@@ -62,26 +65,22 @@ async def main():
     job_queue.run_repeating(send_signal, interval=300, first=5)
 
     # Start bot polling
-    await application.run_polling()
+    loop.run_until_complete(application.run_polling())
 
 # Flask route for testing
 @app.route('/')
 def home():
     return "Bot is running!"
 
-# Fix for Webhook 404 error
+# Webhook fix
 @app.route('/webhook', methods=['POST'])
 def webhook():
     return "Webhook received!", 200
 
-# Function to start the bot
-def start_bot():
-    asyncio.run(main())
-
 # Start Flask and Telegram bot
 if __name__ == "__main__":
-    # Run Telegram bot in main thread
-    bot_thread = Thread(target=start_bot, daemon=True)
+    # Run Telegram bot in a separate thread
+    bot_thread = Thread(target=run_bot, daemon=True)
     bot_thread.start()
 
     # Start Flask app
