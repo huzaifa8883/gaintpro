@@ -1,17 +1,13 @@
 import logging
 import asyncio
 import random
-import nest_asyncio
-from flask import Flask
+from flask import Flask, request
 from threading import Thread
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
 
 # Flask app initialize
 app = Flask(__name__)
-
-# Fix event loop issue
-nest_asyncio.apply()
 
 # Telegram Bot Token (Replace with your own)
 TOKEN = "7930820356:AAFiicSUzpUx2E2_KCaUOzkbETqUI5hvm-I"
@@ -68,18 +64,25 @@ async def main():
     # Start bot polling
     await application.run_polling()
 
-# Function to run Telegram bot in a separate thread
-def run_bot():
-    asyncio.run(main())
-
 # Flask route for testing
 @app.route('/')
 def home():
     return "Bot is running!"
 
-# Start Flask and Bot
+# Fix for Webhook 404 error
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    return "Webhook received!", 200
+
+# Function to start the bot
+def start_bot():
+    asyncio.run(main())
+
+# Start Flask and Telegram bot
 if __name__ == "__main__":
-    bot_thread = Thread(target=run_bot)
+    # Run Telegram bot in main thread
+    bot_thread = Thread(target=start_bot, daemon=True)
     bot_thread.start()
-    
-    app.run(host="0.0.0.0", port=5000)
+
+    # Start Flask app
+    app.run(host="0.0.0.0", port=5000, debug=False)
