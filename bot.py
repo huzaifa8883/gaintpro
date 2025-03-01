@@ -8,6 +8,9 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 # Telegram bot ka token
 TOKEN = "7974068784:AAFs-RpxmHrca2OawNHucMxeGhk5jGBXR4A"
 
+# Scheduler initialize kar rahe hain
+scheduler = AsyncIOScheduler()
+
 # Random ad type generate karne ka function
 def generate_random_ad():
     ad_types = ["Single", "Double", "Small", "Big"]
@@ -53,11 +56,18 @@ async def start_auto_generation(update: Update, context: CallbackContext):
 async def main():
     app = Application.builder().token(TOKEN).build()
 
+    # Start polling the bot
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("generate", generate))
     app.add_handler(CommandHandler("start_auto", start_auto_generation))  # Start auto signals
 
-    # Start polling the bot
+    # Initialize job queue and add scheduler
+    job_queue = app.job_queue
+    job_queue.start()  # Start JobQueue
+
+    # Scheduler ko proper async execution ke liye start karna
+    scheduler.start()
+
     print("🤖 Bot is running...")
     await app.run_polling()
 
