@@ -1,5 +1,6 @@
 import asyncio
 import random
+import nest_asyncio
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -64,6 +65,13 @@ async def main():
     print("🤖 Bot is running...")
     await app.run_polling()
 
-# Run the bot using asyncio.run()
+# 🔹 Event Loop Fix for Running in Async Environments 🔹
 if __name__ == "__main__":
-    asyncio.run(main())
+    nest_asyncio.apply()  # Jupyter Notebook aur similar environments ke liye
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+    loop.run_until_complete(main())
