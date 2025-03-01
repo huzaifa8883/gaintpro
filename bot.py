@@ -1,79 +1,107 @@
-from flask import Flask, request
-import asyncio
+import logging
 import random
+from flask import Flask, request
 from telegram import Update
-from telegram.ext import Application, CommandHandler, CallbackContext
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    CallbackContext,
+    MessageHandler,
+    filters,
+    JobQueue
+)
+
+# Logging setup
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+)
 
 TOKEN = "7930820356:AAFiicSUzpUx2E2_KCaUOzkbETqUI5hvm-I"
 WEBHOOK_URL = "https://gaintpro-production.up.railway.app/webhook"
 
 app = Flask(__name__)
 
-# Function to generate a random ad
-def generate_random_ad():
-    ad_types = ["Single", "Double", "Small", "Big"]
-    random_ad_type = random.choice(ad_types)
-    bet_amount = random.choice([1, 3, 5, 10, 27])
-    period = random.randint(1520250301100, 1520250301200)
-    return f"""⏰Trade Type: 5 Minute⏰
+# Initialize Telegram bot application
+application = Application.builder().token(TOKEN).build()
 
-👉Period: {period}
-👉Buy: {random_ad_type}
-💰Bet: {bet_amount} USDT
 
-🔥Earn 30% interest on each bet.
-🔥The higher the stage, the more profit you make."""
+# ✅ **Function to Generate Random Trade Signals**
+def generate_random_signal():
+    signals = [
+        "🔵 Buy EUR/USD at 1.0850, TP: 1.0900, SL: 1.0800",
+        "🔴 Sell GBP/USD at 1.2750, TP: 1.2700, SL: 1.2800",
+        "🟢 Buy BTC/USD at 45,000, TP: 46,500, SL: 43,500",
+        "🔴 Sell ETH/USD at 3,200, TP: 3,100, SL: 3,300"
+    ]
+    return random.choice(signals)
 
-# Function to send auto-generated signals
+
+# ✅ **Auto Generate Trade Signals Every 5 Minutes**
 async def auto_generate(context: CallbackContext):
     try:
         chat_id = context.job.chat_id
-        ad = generate_random_ad()
-        print(f"Sending signal to {chat_id}: {ad}")
-        await context.bot.send_message(chat_id=chat_id, text=ad)
+        signal = generate_random_signal()
+        print(f"✅ Generating signal for chat {chat_id}: {signal}")
+        await context.bot.send_message(chat_id=chat_id, text=signal)
     except Exception as e:
-        print(f"Error in auto_generate: {e}")
-        await context.bot.send_message(chat_id=context.job.chat_id, text="Error generating trade signal.")
+        print(f"❌ Error in auto_generate: {e}")
 
-# Telegram bot main function
-async def main():
-    app_bot = Application.builder().token(TOKEN).build()
 
-    # Command to start auto signal generation
-    async def start_auto_generation(update: Update, context: CallbackContext):
-        chat_id = update.message.chat_id
-        job_queue = context.application.job_queue
-        job = job_queue.get_jobs_by_name(str(chat_id))
-        if not job:
-            print(f"Starting auto generation for chat_id: {chat_id}")
-            job_queue.run_repeating(auto_generate, interval=300, first=0, chat_id=chat_id, name=str(chat_id))
-            await update.message.reply_text("Auto signal generation started. You will receive a signal every 5 minutes.")
-        else:
-            await update.message.reply_text("Auto signal generation is already running!")
+# ✅ **Start Auto Signal Generation**
+async def start_auto_generation(update: Update, context: CallbackContext):
+    chat_id = update.message.chat_id
+    job_queue = context.application.job_queue
+    job = job_queue.get_jobs_by_name(str(chat_id))
 
-    app_bot.add_handler(CommandHandler("start_auto", start_auto_generation))
-    await app_bot.bot.set_webhook(WEBHOOK_URL)
-    await app_bot.run_webhook()
+    if not job:
+        print(f"✅ Job started for chat ID: {chat_id}")
+        job_queue.run_repeating(auto_generate, interval=300, first=5, chat_id=chat_id, name=str(chat_id))
+        await update.message.reply_text("🚀 Auto signal generation started! You'll receive signals every 5 minutes.")
+    else:
+        await update.message.reply_text("⚠ Auto signal generation is already running!")
 
-# Flask webhook endpoint
-@app.route('/webhook', methods=['POST'])
+
+# ✅ **Stop Auto Signal Generation**
+async def stop_auto_generation(update: Update, context: CallbackContext):
+    chat_id = update.message.chat_id
+    job_queue = context.application.job_queue
+    job = job_queue.get_jobs_by_name(str(chat_id))
+
+    if job:
+        for j in job:
+            j.schedule_removal()
+        print(f"❌ Job stopped for chat ID: {chat_id}")
+        await update.message.reply_text("🛑 Auto signal generation stopped.")
+    else:
+        await update.message.reply_text("⚠ No active signal generation found.")
+
+
+# ✅ **Webhook Handler for Telegram Messages**
+@app.route("/webhook", methods=["POST"])
 def webhook():
-    json_str = request.get_data(as_text=True)
-    print(f"Webhook received: {json_str}")
-    return "OK", 200  # Success response to Telegram
+    try:
+        data = request.json
+        print(f"📩 Received Webhook Data: {data}")
+        update = Update.de_json(data, application.bot)
+        application.update_queue.put_nowait(update)
+        return "OK", 200
+    except Exception as e:
+        print(f"❌ Webhook Error: {e}")
+        return "ERROR", 400
 
-# Home route
-@app.route('/')
-def home():
-    return "Welcome to the bot webhook service!"
 
+# ✅ **Set Webhook on Startup**
+async def set_webhook():
+    webhook_url = f"https://api.telegram.org/bot{TOKEN}/setWebhook?url={WEBHOOK_URL}"
+    async with application.bot.session.post(webhook_url) as response:
+        print(await response.json())
+
+
+# ✅ **Main Function to Start Flask and Telegram Bot**
 if __name__ == "__main__":
-    import nest_asyncio
-    nest_asyncio.apply()
+    # Add Telegram bot handlers
+    application.add_handler(CommandHandler("start_auto", start_auto_generation))
+    application.add_handler(CommandHandler("stop_auto", stop_auto_generation))
 
-    loop = asyncio.get_event_loop()
-    loop.create_task(main())
-
-    from gevent.pywsgi import WSGIServer
-    server = WSGIServer(('0.0.0.0', 5000), app)
-    server.serve_forever()
+    # Run Flask app
+    app.run(port=5000)
