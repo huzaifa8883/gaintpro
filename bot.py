@@ -28,9 +28,12 @@ async def start(update: Update, context: CallbackContext):
 
 # Har 5 minute bad auto generate hone wala function
 async def auto_generate(context: CallbackContext):
-    chat_id = context.job.chat_id  # Use job.chat_id to get chat_id
-    ad = generate_random_ad()
-    await context.bot.send_message(chat_id=chat_id, text=ad)
+    try:
+        chat_id = context.job.chat_id  # Use job.chat_id to get chat_id
+        ad = generate_random_ad()
+        await context.bot.send_message(chat_id=chat_id, text=ad)
+    except Exception as e:
+        print(f"Error in auto_generate: {e}")
 
 # Bot start karne ka function
 async def main():
@@ -56,16 +59,11 @@ async def main():
     # Add the auto generation command
     app.add_handler(CommandHandler("start_auto", start_auto_generation))
 
-    # Start the job queue and start polling
-    await app.run_polling()
+    # Start the job queue and start polling with allowed updates
+    await app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 # 🔹 Event Loop Fix for Running in Async Environments 🔹
 if __name__ == "__main__":
-    nest_asyncio.apply()  # Jupyter Notebook aur similar environments ke liye
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-
+    nest_asyncio.apply()  # Fix for environments like Jupyter Notebook
+    loop = asyncio.get_event_loop()
     loop.run_until_complete(main())
