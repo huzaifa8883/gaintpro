@@ -1,7 +1,6 @@
 import logging
 import asyncio
 import random
-import os
 from flask import Flask, request
 from threading import Thread
 from telegram import Update
@@ -11,8 +10,8 @@ import nest_asyncio  # Import nest_asyncio to fix event loop issue
 # Initialize Flask app
 app = Flask(__name__)
 
-# Telegram Bot Token from environment variable
-TOKEN = os.getenv("7974068784:AAEUIG9tlDYTyNsMLqdc_E1HHq8dlw3cwa4")
+# Telegram Bot Token (Hardcoded)
+TOKEN = "7974068784:AAEUIG9tlDYTyNsMLqdc_E1HHq8dlw3cwa4"
 
 # Store users who started the bot
 subscribed_users = set()
