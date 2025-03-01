@@ -3,7 +3,6 @@ import random
 import nest_asyncio
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
-from telegram.ext import Dispatcher
 
 # Telegram bot ka token
 TOKEN = "7974068784:AAFs-RpxmHrca2OawNHucMxeGhk5jGBXR4A"
