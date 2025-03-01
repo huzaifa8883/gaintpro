@@ -35,6 +35,7 @@ async def auto_generate(context: CallbackContext):
     try:
         chat_id = context.job.chat_id  # Use job.chat_id to get chat_id
         ad = generate_random_ad()
+        print(f"Sending signal to {chat_id}: {ad}")  # Debugging message
         await context.bot.send_message(chat_id=chat_id, text=ad)
     except Exception as e:
         print(f"Error in auto_generate: {e}")
