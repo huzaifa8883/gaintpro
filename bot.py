@@ -2,14 +2,10 @@ import logging
 import random
 from flask import Flask, request
 from telegram import Update
-from telegram.ext import (
-    Application,
-    CommandHandler,
-    CallbackContext,
-)
+from telegram.ext import Application, CommandHandler, CallbackContext
 from threading import Thread
-import aiohttp  # Importing aiohttp for making HTTP requests
-import asyncio  # We will use asyncio to manage both Flask and Telegram bot
+import asyncio
+import aiohttp
 
 # Logging setup
 logging.basicConfig(
@@ -81,7 +77,6 @@ async def stop_auto_generation(update: Update, context: CallbackContext):
 @app.route("/webhook", methods=["POST"])
 def webhook():
     try:
-        # Verify secret token
         if request.headers.get("X-Telegram-Bot-Api-Secret-Token") != WEBHOOK_SECRET:
             return "Unauthorized", 401
 
@@ -97,7 +92,7 @@ def webhook():
 # ✅ **Set Webhook on Startup**
 async def set_webhook():
     webhook_url = f"https://api.telegram.org/bot{TOKEN}/setWebhook?url={WEBHOOK_URL}"
-    async with aiohttp.ClientSession() as session:  # Using aiohttp for the POST request
+    async with aiohttp.ClientSession() as session:
         async with session.post(webhook_url) as response:
             logging.info(await response.json())
 
@@ -119,14 +114,9 @@ async def main():
     application.add_handler(CommandHandler("start_auto", start_auto_generation))
     application.add_handler(CommandHandler("stop_auto", stop_auto_generation))
 
-    # Run Telegram bot
+    # Run Telegram bot in the current event loop
     await application.run_polling()
 
 # ✅ **Run the asyncio event loop to manage both Flask and the Telegram bot**
 if __name__ == "__main__":
-    try:
-        loop = asyncio.get_running_loop()  # Use get_running_loop()
-    except RuntimeError:  # If no event loop is running
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-    loop.run_until_complete(main())  # Ensures that everything is running inside an event loop
+    asyncio.run(main())  # Ensures that everything is running inside an event loop
