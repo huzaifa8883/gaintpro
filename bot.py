@@ -1,4 +1,4 @@
-import logging
+ import logging
 import asyncio
 import random
 from flask import Flask, request
@@ -54,7 +54,7 @@ async def start(update: Update, context):
     chat_id = update.message.chat_id
     if chat_id not in subscribed_users:
         subscribed_users.add(chat_id)
-        await update.message.reply_text("✅ You have subscribed to trade signals. You'll receive updates every 1 minute.")
+        await update.message.reply_text("✅ You have subscribed to trade signals. You'll receive updates every 5 minutes.")
     else:
         await update.message.reply_text("🔔 You are already subscribed!")
 
@@ -65,9 +65,9 @@ async def main():
     # Add /start command handler
     application.add_handler(CommandHandler("start", start))
     
-    # Schedule job to send messages every 1 minute (60 seconds)
+    # Schedule job to send messages every 5 minutes
     job_queue = application.job_queue
-    job_queue.run_repeating(send_signal, interval=60, first=5)  # Changed interval to 60 seconds
+    job_queue.run_repeating(send_signal, interval=60, first=5)
 
     # Start bot polling
     await application.run_polling()
