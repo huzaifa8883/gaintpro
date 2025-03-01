@@ -9,6 +9,7 @@ from telegram.ext import (
     JobQueue
 )
 from decouple import config
+
 from threading import Thread
 
 # Logging setup
@@ -21,9 +22,9 @@ logging.basicConfig(
     ]
 )
 
-TOKEN = config("7930820356:AAFiicSUzpUx2E2_KCaUOzkbETqUI5hvm-I")
-WEBHOOK_URL = config("https://gaintpro-production.up.railway.app/webhook")
-WEBHOOK_SECRET = config("nothing")
+TOKEN = ("7930820356:AAFiicSUzpUx2E2_KCaUOzkbETqUI5hvm-I")
+WEBHOOK_URL = ("https://gaintpro-production.up.railway.app/webhook")
+WEBHOOK_SECRET = ("nothing")
 
 app = Flask(__name__)
 
